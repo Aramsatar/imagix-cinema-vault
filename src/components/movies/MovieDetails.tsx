@@ -44,6 +44,18 @@ const MovieDetails = () => {
     fetchMovie();
   }, [id, toast]);
 
+  const handleWatchTrailer = () => {
+    if (movie?.trailerUrl) {
+      window.open(movie.trailerUrl, '_blank');
+    } else {
+      toast({
+        title: 'Trailer Not Available',
+        description: 'The trailer for this movie is not available.',
+        variant: 'default',
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -135,7 +147,10 @@ const MovieDetails = () => {
                   Book Now
                 </Button>
                 
-                <button className="trailer-button group">
+                <button 
+                  className="trailer-button group" 
+                  onClick={handleWatchTrailer}
+                >
                   <div className="h-10 w-10 rounded-full bg-muted/30 backdrop-blur-sm flex items-center justify-center group-hover:bg-cinema-red/20 transition-colors">
                     <Play size={18} className="ml-0.5" />
                   </div>

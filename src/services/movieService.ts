@@ -1,6 +1,13 @@
 
-// Simulated movie data service
-// In a real application, this would connect to a backend API
+import {
+  TMDBMovie,
+  getNowPlayingMovies,
+  getUpcomingMovies,
+  getPopularMovies,
+  getMovieDetails,
+  getImageUrl,
+  getGenres
+} from './tmdbService';
 
 export interface Movie {
   id: string;
@@ -19,6 +26,90 @@ export interface Movie {
   category: ('now_playing' | 'coming_soon' | 'featured');
 }
 
+// Cache the movie genres for mapping genre IDs to names
+let genresMap: Record<number, string> = {};
+
+// Initialize the genres map
+const initGenresMap = async () => {
+  try {
+    const genres = await getGenres();
+    genresMap = genres.reduce((acc, genre) => {
+      acc[genre.id] = genre.name;
+      return acc;
+    }, {} as Record<number, string>);
+  } catch (error) {
+    console.error("Failed to initialize genres map:", error);
+    // Fallback to empty map, will use fallback movies
+  }
+};
+
+// Convert TMDB movie format to our app's movie format
+const convertTMDBMovieToMovie = (tmdbMovie: TMDBMovie, category: 'now_playing' | 'coming_soon' | 'featured'): Movie => {
+  // Extract genres from either genre_ids (list results) or genres (detail result)
+  const movieGenres: string[] = [];
+  
+  if (tmdbMovie.genres) {
+    // For movie details which have full genre objects
+    movieGenres.push(...tmdbMovie.genres.map(g => g.name));
+  } else if (tmdbMovie.genre_ids) {
+    // For movie lists which only have genre IDs
+    movieGenres.push(...tmdbMovie.genre_ids.map(id => genresMap[id] || "Unknown"));
+  }
+  
+  // Extract director from credits if available
+  let director: string | undefined;
+  if (tmdbMovie.credits?.crew) {
+    const directorInfo = tmdbMovie.credits.crew.find(person => person.job === "Director");
+    if (directorInfo) {
+      director = directorInfo.name;
+    }
+  }
+  
+  // Extract cast if available
+  let cast: string[] | undefined;
+  if (tmdbMovie.credits?.cast) {
+    cast = tmdbMovie.credits.cast.slice(0, 5).map(person => person.name);
+  }
+  
+  // Extract YouTube trailer URL if available
+  let trailerUrl: string | undefined;
+  if (tmdbMovie.videos?.results) {
+    const trailer = tmdbMovie.videos.results.find(
+      video => video.site === "YouTube" && (video.type === "Trailer" || video.type === "Teaser")
+    );
+    if (trailer) {
+      trailerUrl = `https://www.youtube.com/watch?v=${trailer.key}`;
+    }
+  }
+  
+  // Generate random formats (this would ideally come from a real API)
+  const availableFormats: ('2D' | '3D' | 'IMAX' | 'IMAX 3D')[] = ['2D'];
+  if (Math.random() > 0.5) availableFormats.push('3D');
+  if (Math.random() > 0.7) availableFormats.push('IMAX');
+  if (Math.random() > 0.9 && availableFormats.includes('3D')) availableFormats.push('IMAX 3D');
+  
+  return {
+    id: String(tmdbMovie.id),
+    title: tmdbMovie.title,
+    poster: getImageUrl(tmdbMovie.poster_path),
+    backdrop: getImageUrl(tmdbMovie.backdrop_path, "w1280"),
+    releaseDate: tmdbMovie.release_date,
+    runtime: tmdbMovie.runtime || Math.floor(Math.random() * (180 - 80) + 80), // Random runtime if not available
+    genres: movieGenres.length > 0 ? movieGenres : ["Action", "Adventure"], // Fallback genres
+    rating: tmdbMovie.vote_average,
+    overview: tmdbMovie.overview,
+    director,
+    cast,
+    trailerUrl,
+    format: availableFormats,
+    category
+  };
+};
+
+// Initialize the service by loading genres
+initGenresMap();
+
+// Fallback to sample movies if API fails
 const sampleMovies: Movie[] = [
   {
     id: "1",
@@ -214,31 +305,70 @@ const sampleMovies: Movie[] = [
   }
 ];
 
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
-
 export const getMovies = async (category?: string, format?: string): Promise<Movie[]> => {
-  await delay(500); // Simulate network delay
-  
-  let filtered = [...sampleMovies];
-  
-  if (category) {
-    filtered = filtered.filter(movie => movie.category === category);
+  try {
+    let tmdbMovies: TMDBMovie[] = [];
+    
+    if (!category || category === 'featured') {
+      tmdbMovies = await getPopularMovies();
+    } else if (category === 'now_playing') {
+      tmdbMovies = await getNowPlayingMovies();
+    } else if (category === 'coming_soon') {
+      tmdbMovies = await getUpcomingMovies();
+    }
+    
+    // Convert TMDB movies to our app format
+    let movies = tmdbMovies.map(movie => 
+      convertTMDBMovieToMovie(movie, category as 'now_playing' | 'coming_soon' | 'featured' || 'featured')
+    );
+    
+    // Filter by format if specified
+    if (format && format !== 'All') {
+      movies = movies.filter(movie => movie.format.includes(format as any));
+    }
+    
+    return movies;
+  } catch (error) {
+    console.error('Failed to fetch movies from TMDB:', error);
+    // Fallback to sample data
+    let filtered = [...sampleMovies];
+    
+    if (category) {
+      filtered = filtered.filter(movie => movie.category === category);
+    }
+    
+    if (format && format !== 'All') {
+      filtered = filtered.filter(movie => movie.format.includes(format as any));
+    }
+    
+    return filtered;
   }
-  
-  if (format && format !== 'All') {
-    filtered = filtered.filter(movie => movie.format.includes(format as any));
-  }
-  
-  return filtered;
 };
 
 export const getMovieById = async (id: string): Promise<Movie | undefined> => {
-  await delay(300); // Simulate network delay
-  return sampleMovies.find(movie => movie.id === id);
+  try {
+    const tmdbMovie = await getMovieDetails(Number(id));
+    return convertTMDBMovieToMovie(tmdbMovie, 'featured');
+  } catch (error) {
+    console.error('Failed to fetch movie details from TMDB:', error);
+    // Fallback to sample data
+    return sampleMovies.find(movie => movie.id === id);
+  }
 };
 
 export const getFeaturedMovie = async (): Promise<Movie> => {
-  await delay(300); // Simulate network delay
-  const featured = sampleMovies.find(movie => movie.category === 'featured');
-  return featured || sampleMovies[0];
+  try {
+    const popularMovies = await getPopularMovies();
+    // Use the first popular movie as featured
+    if (popularMovies.length > 0) {
+      const tmdbMovie = await getMovieDetails(popularMovies[0].id);
+      return convertTMDBMovieToMovie(tmdbMovie, 'featured');
+    }
+    throw new Error('No featured movie found');
+  } catch (error) {
+    console.error('Failed to fetch featured movie from TMDB:', error);
+    // Fallback to sample data
+    const featured = sampleMovies.find(movie => movie.category === 'featured');
+    return featured || sampleMovies[0];
+  }
 };
