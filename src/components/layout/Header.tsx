@@ -13,7 +13,7 @@ const Header = () => {
       <div className="cinema-container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-cinema-white">IMAGIX</span>
+          <span className="text-2xl font-bold text-cinema-white">CIHAN</span>
           <span className="text-sm text-cinema-red uppercase tracking-wider">Cinema</span>
         </Link>
         

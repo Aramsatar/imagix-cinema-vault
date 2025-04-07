@@ -10,11 +10,11 @@ const Footer = () => {
           {/* Logo and description */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <span className="text-2xl font-bold text-cinema-white">IMAGIX</span>
+              <span className="text-2xl font-bold text-cinema-white">CIHAN</span>
               <span className="text-sm text-cinema-red uppercase tracking-wider">Cinema</span>
             </div>
             <p className="text-cinema-gray max-w-md mb-6">
-              Experience movies like never before with IMAGIX Cinema's state-of-the-art technology and premium seating for the ultimate cinematic experience.
+              Experience movies like never before with CIHAN Cinema's state-of-the-art technology and premium seating for the ultimate cinematic experience.
             </p>
           </div>
           
@@ -34,7 +34,7 @@ const Footer = () => {
             <h4 className="text-cinema-white font-medium mb-4">Contact</h4>
             <ul className="space-y-2 text-cinema-gray">
               <li>1234 Cinema Ave, Los Angeles</li>
-              <li>contact@imagixcinema.com</li>
+              <li>contact@cihancinema.com</li>
               <li>+1 (555) 123-4567</li>
             </ul>
           </div>
@@ -42,7 +42,7 @@ const Footer = () => {
         
         {/* Bottom footer */}
         <div className="pt-6 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-cinema-gray text-sm">© 2025 IMAGIX Cinema. All rights reserved.</p>
+          <p className="text-cinema-gray text-sm">© 2025 CIHAN Cinema. All rights reserved.</p>
           <div className="flex space-x-4">
             <Link to="/terms" className="text-cinema-gray hover:text-cinema-red text-sm transition-colors">Terms of Service</Link>
             <Link to="/privacy" className="text-cinema-gray hover:text-cinema-red text-sm transition-colors">Privacy Policy</Link>
