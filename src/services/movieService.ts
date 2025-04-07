@@ -1,0 +1,180 @@
+
+// Simulated movie data service
+// In a real application, this would connect to a backend API
+
+export interface Movie {
+  id: string;
+  title: string;
+  poster: string;
+  backdrop?: string;
+  releaseDate: string;
+  runtime: number;
+  genres: string[];
+  rating: number;
+  overview: string;
+  director?: string;
+  cast?: string[];
+  trailerUrl?: string;
+  format: ('2D' | '3D' | 'IMAX' | 'IMAX 3D')[];
+  category: ('now_playing' | 'coming_soon' | 'featured');
+}
+
+const sampleMovies: Movie[] = [
+  {
+    id: "1",
+    title: "Venom: The Last Dance",
+    poster: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=500&auto=format&fit=crop",
+    backdrop: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=1200&auto=format&fit=crop",
+    releaseDate: "2025-05-15",
+    runtime: 125,
+    genres: ["Action", "Sci-Fi", "Thriller"],
+    rating: 8.2,
+    overview: "In this thrilling conclusion to the Venom trilogy, Eddie Brock and Venom face their most formidable challenge yet as they encounter a new symbiote threat that could destroy both of their worlds.",
+    director: "Andy Serkis",
+    cast: ["Tom Hardy", "Michelle Williams", "Woody Harrelson", "Naomie Harris"],
+    trailerUrl: "https://www.youtube.com/watch?v=dummylink",
+    format: ["2D", "3D", "IMAX", "IMAX 3D"],
+    category: "featured"
+  },
+  {
+    id: "2",
+    title: "Echoes of Eternity",
+    poster: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop",
+    backdrop: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&auto=format&fit=crop",
+    releaseDate: "2025-04-10",
+    runtime: 142,
+    genres: ["Drama", "Sci-Fi", "Mystery"],
+    rating: 7.8,
+    overview: "A brilliant physicist discovers a way to communicate across multiple dimensions, only to find that altering the fabric of reality comes with unforeseen consequences.",
+    director: "Denis Villeneuve",
+    cast: ["Rachel McAdams", "Oscar Isaac", "Tilda Swinton"],
+    trailerUrl: "https://www.youtube.com/watch?v=dummylink",
+    format: ["2D", "IMAX"],
+    category: "now_playing"
+  },
+  {
+    id: "3",
+    title: "Midnight Shadows",
+    poster: "https://images.unsplash.com/photo-1500462918059-b1a0cb512f1d?w=500&auto=format&fit=crop",
+    backdrop: "https://images.unsplash.com/photo-1506157786151-b8491531f063?w=1200&auto=format&fit=crop",
+    releaseDate: "2025-04-22",
+    runtime: 115,
+    genres: ["Horror", "Thriller", "Mystery"],
+    rating: 7.5,
+    overview: "A group of friends on a weekend getaway encounter a supernatural entity that only appears after sunset, forcing them to confront their deepest fears.",
+    director: "Ari Aster",
+    cast: ["Florence Pugh", "Jack Reynor", "Lakeith Stanfield"],
+    trailerUrl: "https://www.youtube.com/watch?v=dummylink",
+    format: ["2D"],
+    category: "now_playing"
+  },
+  {
+    id: "4",
+    title: "The Lost Expedition",
+    poster: "https://images.unsplash.com/photo-1518909418078-96be7a1d6ead?w=500&auto=format&fit=crop",
+    backdrop: "https://images.unsplash.com/photo-1465101162946-4377e57745c3?w=1200&auto=format&fit=crop",
+    releaseDate: "2025-04-28",
+    runtime: 135,
+    genres: ["Adventure", "Action", "Drama"],
+    rating: 8.1,
+    overview: "When a renowned explorer disappears in the Amazon, his daughter assembles a team to find him, discovering a lost civilization and ancient dangers along the way.",
+    director: "Kathryn Bigelow",
+    cast: ["Charlize Theron", "Daniel Kaluuya", "Pedro Pascal"],
+    trailerUrl: "https://www.youtube.com/watch?v=dummylink",
+    format: ["2D", "IMAX"],
+    category: "now_playing"
+  },
+  {
+    id: "5",
+    title: "Quantum Break",
+    poster: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=500&auto=format&fit=crop",
+    backdrop: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=1200&auto=format&fit=crop",
+    releaseDate: "2025-06-15",
+    runtime: 130,
+    genres: ["Sci-Fi", "Action", "Thriller"],
+    rating: 7.9,
+    overview: "A time-travel experiment gone wrong causes reality to fracture, giving a government agent the ability to manipulate time as a shadowy organization hunts him down.",
+    director: "Christopher Nolan",
+    cast: ["John David Washington", "Robert Pattinson", "Elizabeth Debicki"],
+    trailerUrl: "https://www.youtube.com/watch?v=dummylink",
+    format: ["2D", "IMAX", "IMAX 3D"],
+    category: "coming_soon"
+  },
+  {
+    id: "6",
+    title: "The Golden Hour",
+    poster: "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=500&auto=format&fit=crop",
+    backdrop: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&auto=format&fit=crop",
+    releaseDate: "2025-06-30",
+    runtime: 118,
+    genres: ["Romance", "Drama"],
+    rating: 7.3,
+    overview: "Two strangers meet by chance during the golden hour of sunset in Paris, spending just one day together that will change both of their lives forever.",
+    director: "Richard Linklater",
+    cast: ["Zendaya", "Timothée Chalamet", "Jodie Comer"],
+    trailerUrl: "https://www.youtube.com/watch?v=dummylink",
+    format: ["2D"],
+    category: "coming_soon"
+  },
+  {
+    id: "7",
+    title: "Nebula's Edge",
+    poster: "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=500&auto=format&fit=crop",
+    backdrop: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1200&auto=format&fit=crop",
+    releaseDate: "2025-07-12",
+    runtime: 155,
+    genres: ["Sci-Fi", "Adventure", "Drama"],
+    rating: 8.5,
+    overview: "A deep space mining crew discovers an abandoned alien ship at the edge of a nebula, finding technology that could save humanity but awakens an ancient threat.",
+    director: "James Cameron",
+    cast: ["Zoe Saldana", "Sam Worthington", "Sigourney Weaver"],
+    trailerUrl: "https://www.youtube.com/watch?v=dummylink",
+    format: ["2D", "3D", "IMAX", "IMAX 3D"],
+    category: "coming_soon"
+  },
+  {
+    id: "8",
+    title: "Whispers in the Dark",
+    poster: "https://images.unsplash.com/photo-1626814026359-8cd5661a8450?w=500&auto=format&fit=crop",
+    backdrop: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=1200&auto=format&fit=crop",
+    releaseDate: "2025-07-28",
+    runtime: 110,
+    genres: ["Horror", "Psychological", "Thriller"],
+    rating: 7.7,
+    overview: "A sleep researcher studying night terrors becomes the subject of her own experiment when she starts experiencing increasingly disturbing dreams that blur into reality.",
+    director: "Mike Flanagan",
+    cast: ["Anya Taylor-Joy", "Dev Patel", "Rebecca Hall"],
+    trailerUrl: "https://www.youtube.com/watch?v=dummylink",
+    format: ["2D"],
+    category: "coming_soon"
+  }
+];
+
+const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+export const getMovies = async (category?: string, format?: string): Promise<Movie[]> => {
+  await delay(500); // Simulate network delay
+  
+  let filtered = [...sampleMovies];
+  
+  if (category) {
+    filtered = filtered.filter(movie => movie.category === category);
+  }
+  
+  if (format && format !== 'All') {
+    filtered = filtered.filter(movie => movie.format.includes(format as any));
+  }
+  
+  return filtered;
+};
+
+export const getMovieById = async (id: string): Promise<Movie | undefined> => {
+  await delay(300); // Simulate network delay
+  return sampleMovies.find(movie => movie.id === id);
+};
+
+export const getFeaturedMovie = async (): Promise<Movie> => {
+  await delay(300); // Simulate network delay
+  const featured = sampleMovies.find(movie => movie.category === 'featured');
+  return featured || sampleMovies[0];
+};

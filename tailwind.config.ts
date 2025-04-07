@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,6 +53,16 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				cinema: {
+          navy: "#121829",
+          black: "#06070e",
+          red: "#FF3B30",
+          blue: "#1EAEDB",
+          white: "#FFFFFF",
+          gray: "#C8C8C9",
+          "card-bg": "rgba(32, 40, 62, 0.8)",
+          "overlay": "rgba(0, 0, 0, 0.5)",
+        },
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -84,12 +95,26 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
+				},
+				'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        'slide-up': {
+          '0%': { transform: 'translateY(10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.5s ease-out forwards',
+        'slide-up': 'slide-up 0.5s ease-out forwards',
+			},
+      backgroundImage: {
+        'hero-gradient': 'linear-gradient(rgba(6, 7, 14, 0.3), rgba(6, 7, 14, 0.8))',
+        'cinema-gradient': 'linear-gradient(to bottom, #121829, #06070e)',
+      },
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
