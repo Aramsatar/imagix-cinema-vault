@@ -7,7 +7,8 @@ import {
   getMovieDetails,
   getImageUrl,
   getGenres,
-  searchMovies
+  searchMovies,
+  getTrendingMovies
 } from './tmdbService';
 
 export interface Movie {
