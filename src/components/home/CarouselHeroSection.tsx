@@ -1,5 +1,6 @@
+
 import { useEffect, useState, useRef } from 'react';
-import { Play, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Movie, getMoviesByCategory } from '@/services/movieService';
 import { useToast } from '@/hooks/use-toast';
@@ -19,7 +20,8 @@ const CarouselHeroSection = () => {
   const loadTrendingMovies = async () => {
     try {
       setLoading(true);
-      const movies = await getMoviesByCategory('popular', undefined, 1);
+      // Using 'trending' to get trending movies
+      const movies = await getMoviesByCategory('trending', undefined, 1);
       setTrendingMovies(movies.slice(0, 5)); // Take top 5 trending movies
     } catch (error) {
       console.error('Failed to fetch trending movies:', error);
@@ -39,9 +41,10 @@ const CarouselHeroSection = () => {
 
   useEffect(() => {
     if (isPlaying && trendingMovies.length > 0) {
+      // Set timer to 10 seconds to match trailer clip length
       timerRef.current = setInterval(() => {
         setActiveIndex((prevIndex) => (prevIndex + 1) % trendingMovies.length);
-      }, 10000);
+      }, 10000); // Exactly 10 seconds
     }
 
     return () => {
@@ -67,7 +70,7 @@ const CarouselHeroSection = () => {
       if (isPlaying) {
         timerRef.current = setInterval(() => {
           setActiveIndex((prevIndex) => (prevIndex + 1) % trendingMovies.length);
-        }, 10000);
+        }, 10000); // Reset to 10 seconds
       }
     }
   };
@@ -96,6 +99,7 @@ const CarouselHeroSection = () => {
     const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const match = trailerUrl.match(youtubeRegex);
     
+    // Set clip to play only 10 seconds by specifying start and end parameters
     return match ? `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${match[1]}&start=30&end=40` : null;
   };
 
@@ -106,6 +110,7 @@ const CarouselHeroSection = () => {
       <div className="absolute inset-0 bg-cinema-black">
         {youtubeEmbedUrl ? (
           <iframe
+            ref={iframeRef}
             className="absolute w-full h-full object-cover"
             src={youtubeEmbedUrl}
             title={`${activeMovie.title} trailer`}
@@ -160,7 +165,7 @@ const CarouselHeroSection = () => {
               <div className="h-10 w-10 rounded-full bg-muted/30 backdrop-blur-sm flex items-center justify-center group-hover:bg-cinema-red/20 transition-colors">
                 <Play size={18} className="ml-0.5" />
               </div>
-              <span>Watch Trailer</span>
+              <span>Watch Full Trailer</span>
             </Link>
           </div>
         </div>
@@ -168,12 +173,15 @@ const CarouselHeroSection = () => {
       
       <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center gap-4 z-20">
         {!isMobile && (
-          <button 
-            onClick={handlePrevious}
-            className="w-10 h-10 rounded-full bg-muted/30 backdrop-blur-sm flex items-center justify-center hover:bg-cinema-red/20 transition-colors"
-          >
-            <ChevronLeft size={20} />
-          </button>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={togglePlayPause}
+              className="w-10 h-10 rounded-full bg-muted/30 backdrop-blur-sm flex items-center justify-center hover:bg-cinema-red/20 transition-colors"
+              aria-label={isPlaying ? "Pause" : "Play"}
+            >
+              {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+            </button>
+          </div>
         )}
         
         <div className="flex gap-3 items-center">
@@ -184,18 +192,17 @@ const CarouselHeroSection = () => {
               className={`h-2 rounded-full transition-all ${
                 idx === activeIndex ? "w-10 bg-cinema-red" : "w-2 bg-white/30"
               }`}
-              aria-label={`Go to slide ${idx + 1}`}
+              aria-label={`Go to movie ${idx + 1}`}
             />
           ))}
         </div>
         
         {!isMobile && (
-          <button 
-            onClick={handleNext}
-            className="w-10 h-10 rounded-full bg-muted/30 backdrop-blur-sm flex items-center justify-center hover:bg-cinema-red/20 transition-colors"
-          >
-            <ChevronRight size={20} />
-          </button>
+          <div className="flex gap-2">
+            <span className="text-sm text-white/70">
+              {activeIndex + 1}/{trendingMovies.length}
+            </span>
+          </div>
         )}
       </div>
     </section>
