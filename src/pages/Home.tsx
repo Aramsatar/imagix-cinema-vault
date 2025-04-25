@@ -1,6 +1,6 @@
 
 import PageLayout from '@/components/layout/PageLayout';
-import HeroSection from '@/components/home/HeroSection';
+import CarouselHeroSection from '@/components/home/CarouselHeroSection';
 import MovieSection from '@/components/home/MovieSection';
 import NewsSection from '@/components/home/NewsSection';
 import { Separator } from '@/components/ui/separator';
@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 const Home = () => {
   return (
     <PageLayout>
-      <HeroSection />
+      <CarouselHeroSection />
       
       <MovieSection title="Opening This Week" category="now_playing" />
       

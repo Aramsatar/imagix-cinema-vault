@@ -306,6 +306,46 @@ const sampleMovies: Movie[] = [
   }
 ];
 
+// New function to get movies by category
+export const getMoviesByCategory = async (category: string, format?: string, page: number = 1): Promise<Movie[]> => {
+  try {
+    let tmdbMovies: TMDBMovie[] = [];
+    
+    if (category === 'popular') {
+      tmdbMovies = await getPopularMovies(page);
+    } else if (category === 'now_playing') {
+      tmdbMovies = await getNowPlayingMovies(page);
+    } else if (category === 'coming_soon' || category === 'upcoming') {
+      tmdbMovies = await getUpcomingMovies(page);
+    } else if (category === 'top_rated') {
+      tmdbMovies = await getTopRatedMovies(page);
+    } else if (category === 'trending') {
+      tmdbMovies = await getTrendingMovies('week');
+    }
+    
+    // Convert TMDB movies to our app format
+    let movies = tmdbMovies.map(movie => 
+      convertTMDBMovieToMovie(
+        movie, 
+        category as 'now_playing' | 'coming_soon' | 'featured' | 'top_rated' || 'featured'
+      )
+    );
+    
+    // Filter by format if specified
+    if (format && format !== 'All') {
+      movies = movies.filter(movie => movie.format.includes(format as any));
+    }
+    
+    return movies;
+  } catch (error) {
+    console.error(`Failed to fetch ${category} movies from TMDB:`, error);
+    // Fallback to sample data
+    let filtered = [...sampleMovies];
+    
+    return filtered.slice(0, 5); // Return first 5 as fallback
+  }
+};
+
 export const getMovies = async (category?: string, format?: string, page: number = 1): Promise<Movie[]> => {
   try {
     let tmdbMovies: TMDBMovie[] = [];
