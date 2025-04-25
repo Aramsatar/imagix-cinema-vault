@@ -3,14 +3,17 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Movie, getMovieById } from '@/services/movieService';
 import { Button } from '@/components/ui/button';
-import { Loader2, Play, ArrowLeft, Calendar, Clock } from 'lucide-react';
+import { Loader2, Play, ArrowLeft, Calendar, Clock, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>();
   const [movie, setMovie] = useState<Movie | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isWatchingTrailer, setIsWatchingTrailer] = useState(false);
+  const [isWatchingMovie, setIsWatchingMovie] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -46,7 +49,7 @@ const MovieDetails = () => {
 
   const handleWatchTrailer = () => {
     if (movie?.trailerUrl) {
-      window.open(movie.trailerUrl, '_blank');
+      setIsWatchingTrailer(true);
     } else {
       toast({
         title: 'Trailer Not Available',
@@ -54,6 +57,24 @@ const MovieDetails = () => {
         variant: 'default',
       });
     }
+  };
+  
+  const handleWatchMovie = () => {
+    setIsWatchingMovie(true);
+  };
+  
+  const getTrailerEmbedUrl = () => {
+    if (!movie?.trailerUrl) return '';
+    
+    // Extract YouTube video ID
+    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const match = movie.trailerUrl.match(youtubeRegex);
+    
+    if (match && match[1]) {
+      return `https://www.youtube.com/embed/${match[1]}?autoplay=1`;
+    }
+    
+    return movie.trailerUrl;
   };
 
   if (loading) {
@@ -143,8 +164,11 @@ const MovieDetails = () => {
               </div>
               
               <div className="flex gap-4">
-                <Button className="bg-cinema-red hover:bg-opacity-90">
-                  Book Now
+                <Button 
+                  className="bg-cinema-red hover:bg-opacity-90"
+                  onClick={handleWatchMovie}
+                >
+                  Watch Now
                 </Button>
                 
                 <button 
@@ -246,13 +270,71 @@ const MovieDetails = () => {
               
               <Separator className="my-6" />
               
-              <Button className="w-full bg-cinema-red hover:bg-opacity-90">
-                Book Tickets
+              <Button 
+                className="w-full bg-cinema-red hover:bg-opacity-90"
+                onClick={handleWatchMovie}
+              >
+                Watch Now
               </Button>
             </div>
           </div>
         </div>
       </div>
+      
+      {/* Trailer Modal */}
+      <Dialog open={isWatchingTrailer} onOpenChange={setIsWatchingTrailer}>
+        <DialogContent className="max-w-4xl p-0 bg-cinema-navy border-cinema-gray/20">
+          <div className="relative pt-[56.25%] w-full">
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src={getTrailerEmbedUrl()}
+              title={`${movie.title} Trailer`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Watch Movie Modal */}
+      <Dialog open={isWatchingMovie} onOpenChange={setIsWatchingMovie}>
+        <DialogContent className="max-w-5xl p-0 bg-cinema-navy border-cinema-gray/20">
+          <DialogHeader className="p-4 border-b border-muted/20">
+            <DialogTitle className="text-white">{movie.title}</DialogTitle>
+            <DialogDescription>
+              Enjoy watching the full movie in HD quality
+            </DialogDescription>
+            <Button
+              className="absolute right-4 top-4"
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsWatchingMovie(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogHeader>
+          <div className="relative pt-[56.25%] w-full">
+            {movie.trailerUrl ? (
+              <iframe
+                className="absolute inset-0 w-full h-full"
+                src={getTrailerEmbedUrl()}
+                title={`${movie.title} Movie`}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            ) : (
+              <div className="absolute inset-0 w-full h-full bg-black flex items-center justify-center">
+                <div className="text-center px-4">
+                  <Play className="mx-auto h-16 w-16 text-cinema-red opacity-50" />
+                  <p className="mt-4 text-lg text-white">
+                    This is a demo. In a real application, the movie would play here.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -73,20 +73,32 @@ export const getGenres = async (): Promise<TMDBGenre[]> => {
 };
 
 // Get movies that are now playing in theaters
-export const getNowPlayingMovies = async (): Promise<TMDBMovie[]> => {
-  const data = await fetchFromTMDB("/movie/now_playing", { language: "en-US", page: "1" });
+export const getNowPlayingMovies = async (page: number = 1): Promise<TMDBMovie[]> => {
+  const data = await fetchFromTMDB("/movie/now_playing", { language: "en-US", page: page.toString() });
   return data.results;
 };
 
 // Get upcoming movies
-export const getUpcomingMovies = async (): Promise<TMDBMovie[]> => {
-  const data = await fetchFromTMDB("/movie/upcoming", { language: "en-US", page: "1" });
+export const getUpcomingMovies = async (page: number = 1): Promise<TMDBMovie[]> => {
+  const data = await fetchFromTMDB("/movie/upcoming", { language: "en-US", page: page.toString() });
   return data.results;
 };
 
 // Get popular movies
-export const getPopularMovies = async (): Promise<TMDBMovie[]> => {
-  const data = await fetchFromTMDB("/movie/popular", { language: "en-US", page: "1" });
+export const getPopularMovies = async (page: number = 1): Promise<TMDBMovie[]> => {
+  const data = await fetchFromTMDB("/movie/popular", { language: "en-US", page: page.toString() });
+  return data.results;
+};
+
+// Get top rated movies
+export const getTopRatedMovies = async (page: number = 1): Promise<TMDBMovie[]> => {
+  const data = await fetchFromTMDB("/movie/top_rated", { language: "en-US", page: page.toString() });
+  return data.results;
+};
+
+// Get trending movies
+export const getTrendingMovies = async (timeWindow: 'day' | 'week' = 'week'): Promise<TMDBMovie[]> => {
+  const data = await fetchFromTMDB(`/trending/movie/${timeWindow}`);
   return data.results;
 };
 
@@ -100,14 +112,26 @@ export const getMovieDetails = async (id: number): Promise<TMDBMovie> => {
 };
 
 // Search for movies
-export const searchMovies = async (query: string): Promise<TMDBMovie[]> => {
+export const searchMovies = async (query: string, page: number = 1): Promise<TMDBMovie[]> => {
   if (!query) return [];
   
   const data = await fetchFromTMDB("/search/movie", {
     query,
     language: "en-US",
-    page: "1"
+    page: page.toString()
   });
   
+  return data.results;
+};
+
+// Get similar movies
+export const getSimilarMovies = async (movieId: number): Promise<TMDBMovie[]> => {
+  const data = await fetchFromTMDB(`/movie/${movieId}/similar`);
+  return data.results;
+};
+
+// Get recommendations
+export const getRecommendations = async (movieId: number): Promise<TMDBMovie[]> => {
+  const data = await fetchFromTMDB(`/movie/${movieId}/recommendations`);
   return data.results;
 };

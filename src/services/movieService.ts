@@ -1,12 +1,13 @@
-
 import {
   TMDBMovie,
   getNowPlayingMovies,
   getUpcomingMovies,
   getPopularMovies,
+  getTopRatedMovies,
   getMovieDetails,
   getImageUrl,
-  getGenres
+  getGenres,
+  searchMovies
 } from './tmdbService';
 
 export interface Movie {
@@ -23,7 +24,7 @@ export interface Movie {
   cast?: string[];
   trailerUrl?: string;
   format: ('2D' | '3D' | 'IMAX' | 'IMAX 3D')[];
-  category: ('now_playing' | 'coming_soon' | 'featured');
+  category: ('now_playing' | 'coming_soon' | 'featured' | 'top_rated');
 }
 
 // Cache the movie genres for mapping genre IDs to names
@@ -44,7 +45,7 @@ const initGenresMap = async () => {
 };
 
 // Convert TMDB movie format to our app's movie format
-const convertTMDBMovieToMovie = (tmdbMovie: TMDBMovie, category: 'now_playing' | 'coming_soon' | 'featured'): Movie => {
+const convertTMDBMovieToMovie = (tmdbMovie: TMDBMovie, category: 'now_playing' | 'coming_soon' | 'featured' | 'top_rated'): Movie => {
   // Extract genres from either genre_ids (list results) or genres (detail result)
   const movieGenres: string[] = [];
   
@@ -109,7 +110,7 @@ const convertTMDBMovieToMovie = (tmdbMovie: TMDBMovie, category: 'now_playing' |
 // Initialize the service by loading genres
 initGenresMap();
 
-// Fallback to sample movies if API fails
+// Fallback to sample movies if API fails (keeping the existing sample movies)
 const sampleMovies: Movie[] = [
   {
     id: "1",
@@ -305,21 +306,26 @@ const sampleMovies: Movie[] = [
   }
 ];
 
-export const getMovies = async (category?: string, format?: string): Promise<Movie[]> => {
+export const getMovies = async (category?: string, format?: string, page: number = 1): Promise<Movie[]> => {
   try {
     let tmdbMovies: TMDBMovie[] = [];
     
     if (!category || category === 'featured') {
-      tmdbMovies = await getPopularMovies();
+      tmdbMovies = await getPopularMovies(page);
     } else if (category === 'now_playing') {
-      tmdbMovies = await getNowPlayingMovies();
+      tmdbMovies = await getNowPlayingMovies(page);
     } else if (category === 'coming_soon') {
-      tmdbMovies = await getUpcomingMovies();
+      tmdbMovies = await getUpcomingMovies(page);
+    } else if (category === 'top_rated') {
+      tmdbMovies = await getTopRatedMovies(page);
     }
     
     // Convert TMDB movies to our app format
     let movies = tmdbMovies.map(movie => 
-      convertTMDBMovieToMovie(movie, category as 'now_playing' | 'coming_soon' | 'featured' || 'featured')
+      convertTMDBMovieToMovie(
+        movie, 
+        category as 'now_playing' | 'coming_soon' | 'featured' | 'top_rated' || 'featured'
+      )
     );
     
     // Filter by format if specified
@@ -370,5 +376,22 @@ export const getFeaturedMovie = async (): Promise<Movie> => {
     // Fallback to sample data
     const featured = sampleMovies.find(movie => movie.category === 'featured');
     return featured || sampleMovies[0];
+  }
+};
+
+export const getMoviesBySearch = async (query: string): Promise<Movie[]> => {
+  try {
+    if (!query.trim()) return [];
+    
+    const tmdbMovies = await searchMovies(query);
+    return tmdbMovies.map(movie => convertTMDBMovieToMovie(movie, 'featured'));
+  } catch (error) {
+    console.error('Failed to search movies from TMDB:', error);
+    // Simple search in our sample data as fallback
+    const lowerQuery = query.toLowerCase();
+    return sampleMovies.filter(movie => 
+      movie.title.toLowerCase().includes(lowerQuery) || 
+      movie.genres.some(genre => genre.toLowerCase().includes(lowerQuery))
+    );
   }
 };
