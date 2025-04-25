@@ -1,17 +1,9 @@
-
 import { useEffect, useState, useRef } from 'react';
 import { Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Movie, getMoviesByCategory } from '@/services/movieService';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
-import { 
-  Carousel, 
-  CarouselContent, 
-  CarouselItem, 
-  CarouselPrevious, 
-  CarouselNext
-} from '@/components/ui/carousel';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 const CarouselHeroSection = () => {
@@ -21,8 +13,9 @@ const CarouselHeroSection = () => {
   const [isPlaying, setIsPlaying] = useState(true);
   const { toast } = useToast();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
-  
+
   const loadTrendingMovies = async () => {
     try {
       setLoading(true);
@@ -45,7 +38,6 @@ const CarouselHeroSection = () => {
   }, []);
 
   useEffect(() => {
-    // Auto-rotate carousel every 10 seconds if playing
     if (isPlaying && trendingMovies.length > 0) {
       timerRef.current = setInterval(() => {
         setActiveIndex((prevIndex) => (prevIndex + 1) % trendingMovies.length);
@@ -61,20 +53,15 @@ const CarouselHeroSection = () => {
 
   const handleNext = () => {
     setActiveIndex((prevIndex) => (prevIndex + 1) % trendingMovies.length);
-    // Reset timer when manually changing
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      if (isPlaying) {
-        timerRef.current = setInterval(() => {
-          setActiveIndex((prevIndex) => (prevIndex + 1) % trendingMovies.length);
-        }, 10000);
-      }
-    }
+    resetTimer();
   };
 
   const handlePrevious = () => {
     setActiveIndex((prevIndex) => (prevIndex - 1 + trendingMovies.length) % trendingMovies.length);
-    // Reset timer when manually changing
+    resetTimer();
+  };
+
+  const resetTimer = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       if (isPlaying) {
@@ -103,21 +90,19 @@ const CarouselHeroSection = () => {
 
   const activeMovie = trendingMovies[activeIndex];
   
-  // Create YouTube embed URL from trailer URL
   const getYoutubeEmbedUrl = (trailerUrl?: string): string | null => {
     if (!trailerUrl) return null;
     
     const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const match = trailerUrl.match(youtubeRegex);
     
-    return match ? `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${match[1]}&start=30` : null;
+    return match ? `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${match[1]}&start=30&end=40` : null;
   };
-  
+
   const youtubeEmbedUrl = getYoutubeEmbedUrl(activeMovie.trailerUrl);
 
   return (
     <section className="relative h-[70vh] w-full overflow-hidden">
-      {/* Background overlay video or image */}
       <div className="absolute inset-0 bg-cinema-black">
         {youtubeEmbedUrl ? (
           <iframe
@@ -139,10 +124,8 @@ const CarouselHeroSection = () => {
         )}
       </div>
       
-      {/* Overlay gradient */}
       <div className="absolute inset-0 bg-hero-gradient" />
       
-      {/* Content */}
       <div className="cinema-container relative h-full flex items-center">
         <div className="max-w-2xl animate-fade-in z-10">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
@@ -183,7 +166,6 @@ const CarouselHeroSection = () => {
         </div>
       </div>
       
-      {/* Navigation Controls */}
       <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center gap-4 z-20">
         {!isMobile && (
           <button 
@@ -194,7 +176,6 @@ const CarouselHeroSection = () => {
           </button>
         )}
         
-        {/* Indicators */}
         <div className="flex gap-3 items-center">
           {trendingMovies.map((_, idx) => (
             <button
@@ -222,4 +203,3 @@ const CarouselHeroSection = () => {
 };
 
 export default CarouselHeroSection;
-
