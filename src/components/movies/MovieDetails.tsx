@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Movie, getMovieById } from '@/services/movieService';
-import { Button } from '@/components/ui/button';
-import { Loader2, Play, ArrowLeft, Calendar, Clock, X } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Card } from '@/components/ui/card';
 import { getImageUrl } from '@/services/tmdbService';
+import MovieInfo from './MovieInfo';
+import MovieImages from './MovieImages';
+import MovieCast from './MovieCast';
+import MovieSidebar from './MovieSidebar';
 
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,13 +32,11 @@ const MovieDetails = () => {
         if (movieData) {
           setMovie(movieData);
           
-          // Fetch movie images from TMDB API
           const response = await fetch(
             `https://api.themoviedb.org/3/movie/${id}/images?api_key=49f494cb35b3ea755e58f9a7cd6d183b`
           );
           const imagesData = await response.json();
           
-          // Get cast images
           const castResponse = await fetch(
             `https://api.themoviedb.org/3/movie/${id}/credits?api_key=49f494cb35b3ea755e58f9a7cd6d183b`
           );
@@ -87,7 +86,6 @@ const MovieDetails = () => {
   const getTrailerEmbedUrl = () => {
     if (!movie?.trailerUrl) return '';
     
-    // Extract YouTube video ID
     const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const match = movie.trailerUrl.match(youtubeRegex);
     
@@ -111,18 +109,14 @@ const MovieDetails = () => {
       <div className="text-center py-20">
         <h2 className="text-2xl font-medium mb-4">Movie Not Found</h2>
         <p className="text-cinema-gray mb-6">The movie you're looking for doesn't exist or has been removed.</p>
-        <Link to="/">
-          <Button>Return to Home</Button>
-        </Link>
+        <Link to="/"><button>Return to Home</button></Link>
       </div>
     );
   }
 
   return (
     <div>
-      {/* Hero section with backdrop */}
       <div className="relative h-[60vh] w-full overflow-hidden">
-        {/* Background image */}
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
@@ -130,13 +124,10 @@ const MovieDetails = () => {
           }}
         />
         
-        {/* Gradient overlay */}
         <div className="absolute inset-0 bg-hero-gradient" />
         
-        {/* Content */}
         <div className="cinema-container relative h-full flex items-end pb-12">
           <div className="flex flex-col md:flex-row items-start gap-8">
-            {/* Poster */}
             <div className="w-40 md:w-60 rounded-lg overflow-hidden shadow-xl hidden md:block">
               <img 
                 src={movie.poster} 
@@ -145,192 +136,38 @@ const MovieDetails = () => {
               />
             </div>
             
-            {/* Movie info */}
-            <div className="max-w-2xl animate-fade-in">
-              <Link to="/" className="inline-flex items-center text-cinema-gray hover:text-cinema-red mb-4 transition-colors">
-                <ArrowLeft size={16} className="mr-1" />
-                Back to Movies
-              </Link>
-              
-              <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">
-                {movie.title}
-              </h1>
-              
-              <div className="flex flex-wrap gap-3 mb-4">
-                {movie.genres.map((genre, index) => (
-                  <span 
-                    key={index}
-                    className="px-3 py-1 bg-muted/30 backdrop-blur-sm text-xs rounded-full text-cinema-gray"
-                  >
-                    {genre}
-                  </span>
-                ))}
-              </div>
-              
-              <div className="flex items-center gap-4 text-cinema-gray mb-6">
-                <div className="flex items-center">
-                  <Calendar size={16} className="mr-1" />
-                  <span>
-                    {new Date(movie.releaseDate).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <Clock size={16} className="mr-1" />
-                  <span>{movie.runtime} min</span>
-                </div>
-              </div>
-              
-              <div className="flex gap-4">
-                <Button 
-                  className="bg-cinema-red hover:bg-opacity-90"
-                  onClick={handleWatchMovie}
-                >
-                  Watch Now
-                </Button>
-                
-                <button 
-                  className="trailer-button group" 
-                  onClick={handleWatchTrailer}
-                >
-                  <div className="h-10 w-10 rounded-full bg-muted/30 backdrop-blur-sm flex items-center justify-center group-hover:bg-cinema-red/20 transition-colors">
-                    <Play size={18} className="ml-0.5" />
-                  </div>
-                  <span>Watch Trailer</span>
-                </button>
-              </div>
-            </div>
+            <MovieInfo
+              movie={movie}
+              onWatchMovie={handleWatchMovie}
+              onWatchTrailer={handleWatchTrailer}
+            />
           </div>
         </div>
       </div>
       
-      {/* Movie details */}
       <div className="cinema-container py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Main content */}
           <div className="md:col-span-2">
             <h2 className="text-2xl font-medium mb-4">Synopsis</h2>
             <p className="text-cinema-gray mb-8">
               {movie.overview}
             </p>
             
-            <h2 className="text-2xl font-medium mb-4">Cast & Crew</h2>
-            <div className="mb-8">
-              {movie.director && (
-                <div className="mb-4">
-                  <h3 className="text-lg font-medium">Director</h3>
-                  <p className="text-cinema-gray">{movie.director}</p>
-                </div>
-              )}
-              
-              {movie.cast && movie.cast.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Cast</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {movie.cast.map((actor, index) => (
-                      <span 
-                        key={index} 
-                        className="px-3 py-1 bg-cinema-card-bg rounded-full text-sm text-cinema-gray"
-                      >
-                        {actor}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <MovieCast
+              cast={movie.cast}
+              director={movie.director}
+              castImages={movieImages.cast}
+            />
 
-            {/* Movie Stills */}
-            <h2 className="text-2xl font-medium mb-4 mt-8">Movie Stills</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-              {movieImages.stills.map((imageUrl, index) => (
-                <Card key={index} className="overflow-hidden">
-                  <img
-                    src={imageUrl}
-                    alt={`Movie still ${index + 1}`}
-                    className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
-                  />
-                </Card>
-              ))}
-            </div>
-
-            {/* Cast Images */}
-            <h2 className="text-2xl font-medium mb-4">Cast</h2>
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mb-8">
-              {movieImages.cast.map((imageUrl, index) => (
-                <Card key={index} className="overflow-hidden">
-                  <img
-                    src={imageUrl}
-                    alt={`Cast member ${index + 1}`}
-                    className="w-full aspect-[3/4] object-cover hover:scale-105 transition-transform duration-300"
-                  />
-                </Card>
-              ))}
-            </div>
+            <MovieImages stills={movieImages.stills} />
           </div>
           
-          {/* Sidebar */}
           <div>
-            <div className="bg-cinema-card-bg border border-muted rounded-lg p-6">
-              <h3 className="text-lg font-medium mb-4">Movie Information</h3>
-              
-              <div className="space-y-4 text-cinema-gray">
-                <div>
-                  <h4 className="text-sm opacity-70">Release Date</h4>
-                  <p>
-                    {new Date(movie.releaseDate).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
-                </div>
-                
-                <div>
-                  <h4 className="text-sm opacity-70">Runtime</h4>
-                  <p>{movie.runtime} minutes</p>
-                </div>
-                
-                <div>
-                  <h4 className="text-sm opacity-70">Rating</h4>
-                  <div className="flex items-center">
-                    <span className="text-cinema-red font-medium">{movie.rating.toFixed(1)}</span>
-                    <span className="ml-1">/10</span>
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="text-sm opacity-70">Formats</h4>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {movie.format.map((format, index) => (
-                      <span 
-                        key={index} 
-                        className="px-2 py-0.5 bg-muted/30 text-xs rounded text-cinema-white"
-                      >
-                        {format}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              
-              <Separator className="my-6" />
-              
-              <Button 
-                className="w-full bg-cinema-red hover:bg-opacity-90"
-                onClick={handleWatchMovie}
-              >
-                Watch Now
-              </Button>
-            </div>
+            <MovieSidebar movie={movie} onWatchMovie={handleWatchMovie} />
           </div>
         </div>
       </div>
       
-      {/* Trailer Modal */}
       <Dialog open={isWatchingTrailer} onOpenChange={setIsWatchingTrailer}>
         <DialogContent className="max-w-4xl p-0 bg-cinema-navy border-cinema-gray/20">
           <div className="relative pt-[56.25%] w-full">
@@ -345,7 +182,6 @@ const MovieDetails = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Watch Movie Modal */}
       <Dialog open={isWatchingMovie} onOpenChange={setIsWatchingMovie}>
         <DialogContent className="max-w-5xl p-0 bg-cinema-navy border-cinema-gray/20">
           <DialogHeader className="p-4 border-b border-muted/20">
