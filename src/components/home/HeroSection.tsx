@@ -1,103 +1,90 @@
 
-import { useEffect, useState } from 'react';
-import { Play } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Movie, getFeaturedMovie } from '@/services/movieService';
-import { useToast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { ArrowRight } from "lucide-react"
+import { Mockup, MockupFrame } from "@/components/ui/mockup"
+import { Glow } from "@/components/ui/glow"
 
-const HeroSection = () => {
-  const [featuredMovie, setFeaturedMovie] = useState<Movie | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+interface HeroAction {
+  text: string
+  href: string
+  icon?: React.ReactNode
+  variant?: "default" | "outline"
+}
 
-  useEffect(() => {
-    const loadFeaturedMovie = async () => {
-      try {
-        const movie = await getFeaturedMovie();
-        setFeaturedMovie(movie);
-      } catch (error) {
-        console.error('Failed to fetch featured movie:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load featured movie',
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadFeaturedMovie();
-  }, [toast]);
-
-  if (loading) {
-    return (
-      <div className="h-[70vh] bg-cinema-navy flex items-center justify-center">
-        <div className="animate-pulse h-8 w-48 bg-muted rounded"></div>
-      </div>
-    );
+interface HeroProps {
+  badge?: {
+    text: string
+    action: {
+      text: string
+      href: string
+    }
   }
+  title: string
+  description: string
+  actions: HeroAction[]
+  image: string
+}
 
-  if (!featuredMovie) {
-    return null;
-  }
-
+export function HeroSection({
+  badge,
+  title,
+  description,
+  actions,
+  image,
+}: HeroProps) {
   return (
-    <section className="relative h-[70vh] w-full overflow-hidden">
-      {/* Background image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: `url(${featuredMovie.backdrop || featuredMovie.poster})`,
-        }}
-      />
-      
-      {/* Overlay gradient */}
-      <div className="absolute inset-0 bg-hero-gradient" />
-      
-      {/* Content */}
-      <div className="cinema-container relative h-full flex items-center">
-        <div className="max-w-2xl animate-fade-in">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-            {featuredMovie.title}
+    <section className="bg-background text-foreground py-12 sm:py-24 md:py-32 px-4 overflow-hidden pb-0">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-12 pt-16 sm:gap-24">
+        <div className="flex flex-col items-center gap-6 text-center sm:gap-12">
+          {/* Badge */}
+          {badge && (
+            <Badge variant="outline" className="gap-2">
+              <span className="text-muted-foreground">{badge.text}</span>
+              <a href={badge.action.href} className="flex items-center gap-1">
+                {badge.action.text}
+                <ArrowRight className="h-3 w-3" />
+              </a>
+            </Badge>
+          )}
+
+          {/* Title */}
+          <h1 className="text-4xl font-semibold leading-tight sm:text-6xl sm:leading-tight md:text-7xl md:leading-tight bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+            {title}
           </h1>
-          
-          <div className="flex flex-wrap gap-3 mb-4">
-            {featuredMovie.genres.map((genre, index) => (
-              <span 
-                key={index}
-                className="px-3 py-1 bg-muted/30 backdrop-blur-sm text-xs rounded-full text-cinema-gray"
-              >
-                {genre}
-              </span>
+
+          {/* Description */}
+          <p className="text-md max-w-[550px] font-medium text-muted-foreground sm:text-xl">
+            {description}
+          </p>
+
+          {/* Actions */}
+          <div className="flex justify-center gap-4">
+            {actions.map((action, index) => (
+              <Button key={index} variant={action.variant} size="lg" asChild>
+                <a href={action.href} className="flex items-center gap-2">
+                  {action.icon}
+                  {action.text}
+                </a>
+              </Button>
             ))}
           </div>
-          
-          <p className="text-cinema-gray mb-8 max-w-lg">
-            {featuredMovie.overview.length > 200
-              ? `${featuredMovie.overview.substring(0, 200)}...`
-              : featuredMovie.overview}
-          </p>
-          
-          <div className="flex flex-wrap gap-4">
-            <Link to={`/movie/${featuredMovie.id}`}>
-              <Button className="bg-cinema-red hover:bg-opacity-90">
-                Book Now
-              </Button>
-            </Link>
-            
-            <button className="trailer-button group">
-              <div className="h-10 w-10 rounded-full bg-muted/30 backdrop-blur-sm flex items-center justify-center group-hover:bg-cinema-red/20 transition-colors">
-                <Play size={18} className="ml-0.5" />
-              </div>
-              <span>Watch Trailer</span>
-            </button>
+
+          {/* Image with Glow */}
+          <div className="relative pt-12">
+            <MockupFrame size="small">
+              <Mockup type="responsive">
+                <img
+                  src={image}
+                  alt="Hero preview"
+                  className="w-full h-auto"
+                />
+              </Mockup>
+            </MockupFrame>
+            <Glow variant="top" />
           </div>
         </div>
       </div>
     </section>
-  );
-};
-
-export default HeroSection;
+  )
+}
