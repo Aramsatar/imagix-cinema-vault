@@ -9,6 +9,8 @@ import MovieInfo from './MovieInfo';
 import MovieImages from './MovieImages';
 import MovieCast from './MovieCast';
 import MovieSidebar from './MovieSidebar';
+import { Button } from '@/components/ui/button';
+import { Play } from 'lucide-react';
 
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>();
