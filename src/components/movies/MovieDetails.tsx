@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Movie, getMovieById } from '@/services/movieService';
@@ -7,6 +6,8 @@ import { Loader2, Play, ArrowLeft, Calendar, Clock, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Card } from '@/components/ui/card';
+import { getImageUrl } from '@/services/tmdbService';
 
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,10 +15,14 @@ const MovieDetails = () => {
   const [loading, setLoading] = useState(true);
   const [isWatchingTrailer, setIsWatchingTrailer] = useState(false);
   const [isWatchingMovie, setIsWatchingMovie] = useState(false);
+  const [movieImages, setMovieImages] = useState<{ cast: string[]; stills: string[] }>({
+    cast: [],
+    stills: []
+  });
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchMovie = async () => {
+    const fetchMovieDetails = async () => {
       if (!id) return;
       
       setLoading(true);
@@ -25,11 +30,27 @@ const MovieDetails = () => {
         const movieData = await getMovieById(id);
         if (movieData) {
           setMovie(movieData);
-        } else {
-          toast({
-            title: 'Error',
-            description: 'Movie not found',
-            variant: 'destructive',
+          
+          // Fetch movie images from TMDB API
+          const response = await fetch(
+            `https://api.themoviedb.org/3/movie/${id}/images?api_key=49f494cb35b3ea755e58f9a7cd6d183b`
+          );
+          const imagesData = await response.json();
+          
+          // Get cast images
+          const castResponse = await fetch(
+            `https://api.themoviedb.org/3/movie/${id}/credits?api_key=49f494cb35b3ea755e58f9a7cd6d183b`
+          );
+          const castData = await castResponse.json();
+          
+          setMovieImages({
+            cast: castData.cast
+              .filter((member: any) => member.profile_path)
+              .slice(0, 6)
+              .map((member: any) => getImageUrl(member.profile_path, 'w185')),
+            stills: imagesData.backdrops
+              .slice(0, 6)
+              .map((image: any) => getImageUrl(image.file_path, 'w780'))
           });
         }
       } catch (error) {
@@ -44,7 +65,7 @@ const MovieDetails = () => {
       }
     };
 
-    fetchMovie();
+    fetchMovieDetails();
   }, [id, toast]);
 
   const handleWatchTrailer = () => {
@@ -220,6 +241,34 @@ const MovieDetails = () => {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Movie Stills */}
+            <h2 className="text-2xl font-medium mb-4 mt-8">Movie Stills</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+              {movieImages.stills.map((imageUrl, index) => (
+                <Card key={index} className="overflow-hidden">
+                  <img
+                    src={imageUrl}
+                    alt={`Movie still ${index + 1}`}
+                    className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </Card>
+              ))}
+            </div>
+
+            {/* Cast Images */}
+            <h2 className="text-2xl font-medium mb-4">Cast</h2>
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mb-8">
+              {movieImages.cast.map((imageUrl, index) => (
+                <Card key={index} className="overflow-hidden">
+                  <img
+                    src={imageUrl}
+                    alt={`Cast member ${index + 1}`}
+                    className="w-full aspect-[3/4] object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </Card>
+              ))}
             </div>
           </div>
           

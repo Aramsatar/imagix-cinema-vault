@@ -33,9 +33,9 @@ const Footer = () => {
           <div>
             <h4 className="text-cinema-white font-medium mb-4">Contact</h4>
             <ul className="space-y-2 text-cinema-gray">
-              <li>1234 Cinema Ave, Los Angeles</li>
+              <li>Jihan University Erbil</li>
               <li>contact@cihancinema.com</li>
-              <li>+1 (555) 123-4567</li>
+              <li>+9647518163369</li>
             </ul>
           </div>
         </div>
